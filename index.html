@@ -27,6 +27,8 @@
     --dark-mode-bg: #121826;
     --dark-mode-card: #1e293b;
     --dark-mode-text: #e2e8f0;
+    --tab-suami: #5c6bc0;
+    --tab-istri: #ec407a;
   }
   
   body {
@@ -973,6 +975,73 @@
     color: var(--dark-mode-bg);
   }
   
+  /* Tab Styles */
+  .tab-container {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f0f4ff;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+  }
+
+  body.dark-mode .tab-container {
+    background: rgba(30, 41, 59, 0.3);
+  }
+  
+  .tab-btn {
+    flex: 1;
+    padding: 15px 0;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .tab-btn.suami {
+    background: rgba(92, 107, 192, 0.15);
+    color: var(--tab-suami);
+  }
+  
+  .tab-btn.istri {
+    background: rgba(236, 64, 122, 0.15);
+    color: var(--tab-istri);
+  }
+  
+  .tab-btn.active {
+    background: var(--tab-suami);
+    color: white;
+  }
+  
+  .tab-btn.istri.active {
+    background: var(--tab-istri);
+  }
+  
+  .tab-btn:not(.active):hover {
+    background: rgba(168, 208, 230, 0.3);
+  }
+
+  body.dark-mode .tab-btn:not(.active):hover {
+    background: rgba(55, 71, 133, 0.3);
+  }
+  
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: white;
+    border-radius: 2px;
+  }
+  
   /* Animations */
   @keyframes fadeIn {
     from { opacity: 0; }
@@ -1090,6 +1159,11 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
+    }
+    
+    .tab-btn {
+      font-size: 0.95rem;
+      padding: 12px 0;
     }
   }
 </style>
@@ -1225,6 +1299,16 @@
           </div>
         </form>
       </div>
+      
+      <!-- Tab untuk Calon Suami/Istri -->
+      <div class="tab-container">
+        <button class="tab-btn suami active" id="tabSuami">
+          <i class="fas fa-male"></i> Punya Calon Suami
+        </button>
+        <button class="tab-btn istri" id="tabIstri">
+          <i class="fas fa-female"></i> Punya Calon Istri
+        </button>
+      </div>
 
       <table id="budgetTable" aria-label="Daftar Anggaran Pernikahan">
         <thead>
@@ -1283,9 +1367,13 @@
   <script>
     (() => {
       // Data struktur
-      const acaraList = [];
       const STORAGE_KEY = 'panda_wedding_data_';
       let currentUser = null;
+      let currentTab = 'suami'; // 'suami' atau 'istri'
+      
+      // Data untuk calon suami dan istri
+      const acaraListSuami = [];
+      const acaraListIstri = [];
       
       // DOM Elements
       const loginContainer = document.getElementById('loginContainer');
@@ -1313,6 +1401,8 @@
       const exportPdfBtn = document.getElementById('exportPdfBtn');
       const exportExcelBtn = document.getElementById('exportExcelBtn');
       const themeToggle = document.getElementById('themeToggle');
+      const tabSuami = document.getElementById('tabSuami');
+      const tabIstri = document.getElementById('tabIstri');
 
       // Format mata uang Rupiah
       function formatRupiah(number) {
@@ -1334,13 +1424,19 @@
         }, 3000);
       }
 
+      // Mendapatkan data aktif berdasarkan tab yang dipilih
+      function getActiveData() {
+        return currentTab === 'suami' ? acaraListSuami : acaraListIstri;
+      }
+
       // Simpan data ke localStorage
       function saveData() {
         if (!currentUser) return;
         
         try {
           const data = {
-            acaraList: acaraList,
+            acaraListSuami: acaraListSuami,
+            acaraListIstri: acaraListIstri,
             timestamp: new Date().toISOString()
           };
           localStorage.setItem(STORAGE_KEY + currentUser, JSON.stringify(data));
@@ -1358,12 +1454,23 @@
           const savedData = localStorage.getItem(STORAGE_KEY + currentUser);
           if (savedData) {
             const parsedData = JSON.parse(savedData);
-            acaraList.length = 0; // Clear existing data
+            
+            // Clear existing data
+            acaraListSuami.length = 0;
+            acaraListIstri.length = 0;
             
             // Add loaded data
-            parsedData.acaraList.forEach(item => {
-              acaraList.push(item);
-            });
+            if (parsedData.acaraListSuami) {
+              parsedData.acaraListSuami.forEach(item => {
+                acaraListSuami.push(item);
+              });
+            }
+            
+            if (parsedData.acaraListIstri) {
+              parsedData.acaraListIstri.forEach(item => {
+                acaraListIstri.push(item);
+              });
+            }
             
             renderTable();
             showNotification('Data berhasil dimuat!');
@@ -1378,7 +1485,8 @@
       // Reset semua data
       function resetData() {
         if (confirm('Apakah Anda yakin ingin menghapus semua data? Data tidak dapat dikembalikan.')) {
-          acaraList.length = 0;
+          acaraListSuami.length = 0;
+          acaraListIstri.length = 0;
           renderTable();
           localStorage.removeItem(STORAGE_KEY + currentUser);
           showNotification('Semua data telah direset');
@@ -1387,11 +1495,12 @@
 
       // Update ringkasan kotak
       function updateSummaryBoxes() {
-        const totalEvents = acaraList.length;
+        const activeData = getActiveData();
+        const totalEvents = activeData.length;
         let totalPerlengkapan = 0;
         let totalAmount = 0;
         
-        acaraList.forEach(acara => {
+        activeData.forEach(acara => {
           totalPerlengkapan += acara.perlengkapan.length;
           acara.perlengkapan.forEach(item => {
             totalAmount += item.amount;
@@ -1436,8 +1545,9 @@
           
           if (srcType === 'acara') {
             // Pindahkan acara
-            const moved = acaraList.splice(srcIndex, 1)[0];
-            acaraList.splice(tgtIndex, 0, moved);
+            const activeData = getActiveData();
+            const moved = activeData.splice(srcIndex, 1)[0];
+            activeData.splice(tgtIndex, 0, moved);
             saveData();
             renderTable();
           }
@@ -1447,17 +1557,18 @@
           const tgtPerlengkapanIndex = parseInt(this.dataset.perlengkapanIndex);
           
           if (srcType === 'perlengkapan') {
+            const activeData = getActiveData();
             if (srcAcaraIndex === tgtAcaraIndex) {
               // Pindahkan perlengkapan dalam acara yang sama
-              const perlengkapan = acaraList[srcAcaraIndex].perlengkapan;
+              const perlengkapan = activeData[srcAcaraIndex].perlengkapan;
               const moved = perlengkapan.splice(srcIndex, 1)[0];
               perlengkapan.splice(tgtPerlengkapanIndex, 0, moved);
               saveData();
               renderTable();
             } else {
               // Pindahkan perlengkapan ke acara lain
-              const srcItem = acaraList[srcAcaraIndex].perlengkapan.splice(srcIndex, 1)[0];
-              acaraList[tgtAcaraIndex].perlengkapan.splice(tgtPerlengkapanIndex, 0, srcItem);
+              const srcItem = activeData[srcAcaraIndex].perlengkapan.splice(srcIndex, 1)[0];
+              activeData[tgtAcaraIndex].perlengkapan.splice(tgtPerlengkapanIndex, 0, srcItem);
               saveData();
               renderTable();
             }
@@ -1473,8 +1584,10 @@
 
       // Render tabel dengan data acara
       function renderTable() {
+        const activeData = getActiveData();
+        
         // Cek jika tidak ada acara
-        if (acaraList.length === 0) {
+        if (activeData.length === 0) {
           tbody.innerHTML = `
             <tr class="empty-table-row">
               <td colspan="6">
@@ -1492,7 +1605,7 @@
         
         tbody.innerHTML = '';
         
-        acaraList.forEach((acara, acaraIndex) => {
+        activeData.forEach((acara, acaraIndex) => {
           // Baris acara header
           const trAcara = document.createElement('tr');
           trAcara.classList.add('acara-header');
@@ -1584,7 +1697,7 @@
           btnRemoveAcara.addEventListener('click', e => {
             e.stopPropagation();
             if (confirm(`Hapus acara "${acara.name}" beserta semua perlengkapannya?`)) {
-              acaraList.splice(acaraIndex, 1);
+              activeData.splice(acaraIndex, 1);
               saveData();
               renderTable();
             }
@@ -1748,8 +1861,11 @@
           return;
         }
 
+        // Pilih data yang aktif
+        const activeData = getActiveData();
+        
         // Cari acara, buat baru jika belum ada
-        let acara = acaraList.find(a => a.name.toLowerCase() === acaraName.toLowerCase());
+        let acara = activeData.find(a => a.name.toLowerCase() === acaraName.toLowerCase());
         if (!acara) {
           acara = { 
             name: acaraName, 
@@ -1757,7 +1873,7 @@
             time: eventTime || '12:00',
             perlengkapan: []
           };
-          acaraList.push(acara);
+          activeData.push(acara);
           // Tambahkan ke daftar autocomplete
           const option = document.createElement('option');
           option.value = acaraName;
@@ -1788,7 +1904,8 @@
 
       // Export to PDF (simplified)
       exportPdfBtn.addEventListener('click', () => {
-        if (acaraList.length === 0) {
+        const activeData = getActiveData();
+        if (activeData.length === 0) {
           showNotification('Tidak ada data untuk diexport', true);
           return;
         }
@@ -1802,7 +1919,8 @@
 
       // Fungsi untuk export ke Excel
       function exportToExcel() {
-        if (acaraList.length === 0) {
+        const activeData = getActiveData();
+        if (activeData.length === 0) {
           showNotification('Tidak ada data untuk diexport', true);
           return;
         }
@@ -1820,16 +1938,17 @@
           // Membuat sheet untuk ringkasan
           const summaryData = [
             ["RINGKASAN ANGGARAN PERNIKAHAN"],
-            ["Total Acara", acaraList.length],
-            ["Total Perlengkapan", acaraList.reduce((total, acara) => total + acara.perlengkapan.length, 0)],
-            ["Total Anggaran", formatRupiah(acaraList.reduce((total, acara) => 
+            ["Tab Aktif", currentTab === 'suami' ? "Calon Suami" : "Calon Istri"],
+            ["Total Acara", activeData.length],
+            ["Total Perlengkapan", activeData.reduce((total, acara) => total + acara.perlengkapan.length, 0)],
+            ["Total Anggaran", formatRupiah(activeData.reduce((total, acara) => 
               total + acara.perlengkapan.reduce((sum, item) => sum + item.amount, 0), 0))],
             [],
             ["DETAIL PER ACARA"]
           ];
           
           // Menambahkan data per acara ke ringkasan
-          acaraList.forEach(acara => {
+          activeData.forEach(acara => {
             const totalAcara = acara.perlengkapan.reduce((sum, item) => sum + item.amount, 0);
             summaryData.push([acara.name, formatRupiah(totalAcara)]);
           });
@@ -1838,7 +1957,7 @@
           XLSX.utils.book_append_sheet(wb, ws_summary, "Ringkasan");
           
           // Membuat sheet untuk setiap acara
-          acaraList.forEach(acara => {
+          activeData.forEach(acara => {
             const acaraData = [
               [acara.name.toUpperCase()],
               [`Tanggal: ${acara.date || '-'}`, `Waktu: ${acara.time || '-'}`],
@@ -1876,6 +1995,22 @@
       // Event listener untuk tombol export Excel
       exportExcelBtn.addEventListener('click', exportToExcel);
 
+      // Fungsi untuk mengubah tab
+      function switchTab(newTab) {
+        currentTab = newTab;
+        
+        // Update tampilan tab
+        tabSuami.classList.toggle('active', newTab === 'suami');
+        tabIstri.classList.toggle('active', newTab === 'istri');
+        
+        // Render ulang tabel
+        renderTable();
+      }
+
+      // Event listener untuk tab
+      tabSuami.addEventListener('click', () => switchTab('suami'));
+      tabIstri.addEventListener('click', () => switchTab('istri'));
+
       // Login functionality
       loginBtn.addEventListener('click', () => {
         // Login langsung tanpa username/password
@@ -1901,7 +2036,8 @@
       // Logout functionality
       logoutBtn.addEventListener('click', () => {
         currentUser = null;
-        acaraList.length = 0;
+        acaraListSuami.length = 0;
+        acaraListIstri.length = 0;
         mainApp.style.display = 'none';
         loginContainer.style.display = 'block';
         showNotification('Anda telah logout');
