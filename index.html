@@ -1205,7 +1205,7 @@
     
     <div class="container">
       <div class="user-info">
-        <span id="userName">pandajawa</span>
+        <span id="userName"></span>
         <button class="logout-btn" id="logoutBtn" title="Keluar">
           <i class="fas fa-sign-out-alt"></i>
         </button>
@@ -1986,7 +1986,7 @@
         const password = document.getElementById('password').value;
         
         // Perubahan password di sini
-        if (username === 'pandajawa' && password === 'pandajawa2422') {
+        if (username === '' && password === '') {
           // Login successful
           currentUser = username;
           userNameEl.textContent = username;
