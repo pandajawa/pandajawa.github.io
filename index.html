@@ -814,59 +814,8 @@
     color: var(--dark-mode-text);
   }
   
-  .login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .login-form .form-group {
-    position: relative;
-    text-align: left;
-  }
-  
-  .login-form label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--navy);
-    opacity: 0.9;
-  }
-
-  body.dark-mode .login-form label {
-    color: var(--pastel-blue);
-  }
-  
-  .login-form input {
-    width: 100%;
-    padding: 14px 18px;
-    font-size: 1rem;
-    background: #f8f9ff;
-    color: var(--text);
-    border: 2px solid var(--pastel-blue);
-    border-radius: 12px;
-    transition: all 0.3s ease;
-  }
-
-  body.dark-mode .login-form input {
-    background: rgba(30, 41, 59, 0.5);
-    color: var(--dark-mode-text);
-    border-color: var(--navy);
-  }
-  
-  .login-form input:focus {
-    border-color: var(--navy);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(55, 71, 133, 0.1);
-  }
-
-  body.dark-mode .login-form input:focus {
-    border-color: var(--pastel-green);
-    box-shadow: 0 0 0 3px rgba(199, 240, 216, 0.2);
-  }
-  
   .login-btn {
-    padding: 16px;
+    padding: 16px 30px;
     font-size: 1.1rem;
     background: var(--pastel-green);
     color: var(--navy);
@@ -875,10 +824,8 @@
     cursor: pointer;
     font-weight: 600;
     transition: all 0.3s ease;
-    margin-top: 10px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   }
@@ -965,67 +912,65 @@
   .logout-btn:hover {
     transform: rotate(15deg);
   }
-  
-  /* Tab System */
-  .tabs-container {
-    margin: 0 auto 30px;
-    max-width: 500px;
-  }
-  
-  .tabs {
-    display: flex;
-    background: white;
-    border-radius: 50px;
-    padding: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  body.dark-mode .tabs {
-    background: var(--dark-mode-card);
-  }
-  
-  .tab-btn {
-    flex: 1;
-    padding: 12px 20px;
-    border: none;
-    background: none;
-    border-radius: 50px;
-    font-weight: 600;
-    color: var(--navy);
+
+  /* Status button */
+  .status-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
     cursor: pointer;
     transition: all 0.3s ease;
-    position: relative;
-    z-index: 1;
+    margin: 0 auto;
+    display: block;
+    border: none;
   }
-  
-  body.dark-mode .tab-btn {
+
+  .status-btn.not-ready {
+    background: #f76c6c; /* Red */
+    box-shadow: 0 0 8px rgba(247, 108, 108, 0.5);
+  }
+
+  .status-btn.ready {
+    background: #4CAF50; /* Green */
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+  }
+
+  body.dark-mode .status-btn.not-ready {
+    background: #e53e3e;
+  }
+
+  body.dark-mode .status-btn.ready {
+    background: #38a169;
+  }
+
+  .add-perlengkapan-btn {
+    background: rgba(55, 71, 133, 0.1);
+    border: none;
+    color: var(--navy);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  body.dark-mode .add-perlengkapan-btn {
+    background: rgba(55, 71, 133, 0.3);
     color: var(--dark-mode-text);
   }
   
-  .tab-btn.active {
-    background: var(--pastel-pink);
+  .add-perlengkapan-btn:hover {
+    background: var(--pastel-blue);
     color: var(--navy);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
-  
-  body.dark-mode .tab-btn.active {
+
+  body.dark-mode .add-perlengkapan-btn:hover {
     background: var(--pastel-green);
     color: var(--dark-mode-bg);
-  }
-  
-  .tab-indicator {
-    position: absolute;
-    height: 80%;
-    top: 10%;
-    background: var(--pastel-pink);
-    border-radius: 50px;
-    transition: all 0.3s ease;
-  }
-  
-  body.dark-mode .tab-indicator {
-    background: var(--pastel-green);
   }
   
   /* Animations */
@@ -1146,20 +1091,6 @@
       align-items: center;
       text-align: center;
     }
-    
-    .tabs {
-      flex-direction: column;
-      border-radius: 16px;
-    }
-    
-    .tab-btn {
-      border-radius: 12px;
-      margin: 5px;
-    }
-    
-    .tab-indicator {
-      display: none;
-    }
   }
 </style>
 </head>
@@ -1178,23 +1109,11 @@
       <i class="fas fa-paw"></i>
     </div>
     <h1 class="login-title">Panda Wedding Planner</h1>
-    <p class="login-subtitle">Masuk untuk mengelola anggaran pernikahan Anda</p>
+    <p class="login-subtitle">Klik tombol di bawah untuk mulai mengelola anggaran pernikahan Anda</p>
     
-    <form class="login-form" id="loginForm">
-      <div class="form-group">
-        <label for="username"><i class="fas fa-user"></i> Username</label>
-        <input type="text" id="username" placeholder="Masukkan username" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="password"><i class="fas fa-lock"></i> Password</label>
-        <input type="password" id="password" placeholder="Masukkan password" required>
-      </div>
-      
-      <button type="submit" class="login-btn">
-        <i class="fas fa-sign-in-alt"></i> Masuk
-      </button>
-    </form>
+    <button class="login-btn" id="loginBtn">
+      <i class="fas fa-sign-in-alt"></i> Masuk
+    </button>
   </div>
 
   <!-- Main Application (initially hidden) -->
@@ -1205,7 +1124,7 @@
     
     <div class="container">
       <div class="user-info">
-        <span id="userName"></span>
+        <span id="userName">pandajawa</span>
         <button class="logout-btn" id="logoutBtn" title="Keluar">
           <i class="fas fa-sign-out-alt"></i>
         </button>
@@ -1231,20 +1150,12 @@
           <button class="data-btn" id="exportPdfBtn">
             <i class="fas fa-file-pdf"></i> Export PDF
           </button>
+          <!-- Tombol baru untuk export Excel -->
           <button class="data-btn" id="exportExcelBtn">
             <i class="fas fa-file-excel"></i> Export Excel
           </button>
         </div>
       </header>
-      
-      <!-- Tab System -->
-      <div class="tabs-container">
-        <div class="tabs" id="tabs">
-          <button class="tab-btn active" data-tab="saya">Punya Calon Suami</button>
-          <button class="tab-btn" data-tab="istri">Punya Calon Istri</button>
-          <div class="tab-indicator" id="tabIndicator"></div>
-        </div>
-      </div>
       
       <div class="summary-boxes">
         <div class="summary-box">
@@ -1322,12 +1233,13 @@
             <th>Jadwal</th>
             <th>Jumlah Barang</th>
             <th>Biaya (Rp)</th>
+            <th>Status</th> <!-- Kolom baru -->
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody id="tableBody">
           <tr class="empty-table-row">
-            <td colspan="5">
+            <td colspan="6">
               <div class="empty-table">
                 <i class="fas fa-receipt"></i>
                 <h3>Belum ada data anggaran</h3>
@@ -1338,7 +1250,7 @@
         </tbody>
         <tfoot>
           <tr class="total-row">
-            <td colspan="3">Total Keseluruhan</td>
+            <td colspan="4">Total Keseluruhan</td>
             <td id="totalAmount">Rp 0</td>
             <td></td>
           </tr>
@@ -1370,19 +1282,15 @@
   
   <script>
     (() => {
-      // Data struktur dengan tab terpisah
-      const userData = {
-        saya: [],
-        istri: []
-      };
-      let currentTab = 'saya';
+      // Data struktur
+      const acaraList = [];
       const STORAGE_KEY = 'panda_wedding_data_';
       let currentUser = null;
       
       // DOM Elements
       const loginContainer = document.getElementById('loginContainer');
       const mainApp = document.getElementById('mainApp');
-      const loginForm = document.getElementById('loginForm');
+      const loginBtn = document.getElementById('loginBtn');
       const logoutBtn = document.getElementById('logoutBtn');
       const userNameEl = document.getElementById('userName');
       const form = document.getElementById('addPerlengkapanForm');
@@ -1405,9 +1313,6 @@
       const exportPdfBtn = document.getElementById('exportPdfBtn');
       const exportExcelBtn = document.getElementById('exportExcelBtn');
       const themeToggle = document.getElementById('themeToggle');
-      const tabsContainer = document.getElementById('tabs');
-      const tabIndicator = document.getElementById('tabIndicator');
-      const tabButtons = document.querySelectorAll('.tab-btn');
 
       // Format mata uang Rupiah
       function formatRupiah(number) {
@@ -1428,46 +1333,6 @@
           notification.classList.remove('show');
         }, 3000);
       }
-      
-      // Update tab indicator position
-      function updateTabIndicator() {
-        const activeTab = tabsContainer.querySelector('.tab-btn.active');
-        if (activeTab) {
-          const tabRect = activeTab.getBoundingClientRect();
-          const containerRect = tabsContainer.getBoundingClientRect();
-          tabIndicator.style.width = `${tabRect.width}px`;
-          tabIndicator.style.left = `${tabRect.left - containerRect.left}px`;
-        }
-      }
-      
-      // Switch between tabs
-      function switchTab(tabName) {
-        currentTab = tabName;
-        
-        // Update active tab button
-        tabButtons.forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.tab === tabName);
-        });
-        
-        updateTabIndicator();
-        renderTable();
-        
-        // Update datalist for current tab
-        updateAcaraDatalist();
-      }
-      
-      // Update acara datalist for current tab
-      function updateAcaraDatalist() {
-        const acaraList = userData[currentTab];
-        const acaraNames = [...new Set(acaraList.map(acara => acara.name))];
-        
-        acaraDatalist.innerHTML = '';
-        acaraNames.forEach(name => {
-          const option = document.createElement('option');
-          option.value = name;
-          acaraDatalist.appendChild(option);
-        });
-      }
 
       // Simpan data ke localStorage
       function saveData() {
@@ -1475,8 +1340,7 @@
         
         try {
           const data = {
-            userData: userData,
-            currentTab: currentTab,
+            acaraList: acaraList,
             timestamp: new Date().toISOString()
           };
           localStorage.setItem(STORAGE_KEY + currentUser, JSON.stringify(data));
@@ -1494,20 +1358,14 @@
           const savedData = localStorage.getItem(STORAGE_KEY + currentUser);
           if (savedData) {
             const parsedData = JSON.parse(savedData);
+            acaraList.length = 0; // Clear existing data
             
-            // Load user data
-            if (parsedData.userData) {
-              userData.saya = parsedData.userData.saya || [];
-              userData.istri = parsedData.userData.istri || [];
-            }
+            // Add loaded data
+            parsedData.acaraList.forEach(item => {
+              acaraList.push(item);
+            });
             
-            // Set current tab
-            if (parsedData.currentTab) {
-              switchTab(parsedData.currentTab);
-            } else {
-              switchTab('saya');
-            }
-            
+            renderTable();
             showNotification('Data berhasil dimuat!');
           } else {
             showNotification('Tidak ada data yang tersimpan', true);
@@ -1517,19 +1375,18 @@
         }
       }
 
-      // Reset semua data untuk tab aktif
+      // Reset semua data
       function resetData() {
-        if (confirm(`Apakah Anda yakin ingin menghapus semua data untuk tab ${currentTab}? Data tidak dapat dikembalikan.`)) {
-          userData[currentTab] = [];
-          saveData();
+        if (confirm('Apakah Anda yakin ingin menghapus semua data? Data tidak dapat dikembalikan.')) {
+          acaraList.length = 0;
           renderTable();
-          showNotification(`Semua data untuk tab ${currentTab} telah direset`);
+          localStorage.removeItem(STORAGE_KEY + currentUser);
+          showNotification('Semua data telah direset');
         }
       }
 
       // Update ringkasan kotak
       function updateSummaryBoxes() {
-        const acaraList = userData[currentTab];
         const totalEvents = acaraList.length;
         let totalPerlengkapan = 0;
         let totalAmount = 0;
@@ -1579,8 +1436,8 @@
           
           if (srcType === 'acara') {
             // Pindahkan acara
-            const moved = userData[currentTab].splice(srcIndex, 1)[0];
-            userData[currentTab].splice(tgtIndex, 0, moved);
+            const moved = acaraList.splice(srcIndex, 1)[0];
+            acaraList.splice(tgtIndex, 0, moved);
             saveData();
             renderTable();
           }
@@ -1592,15 +1449,15 @@
           if (srcType === 'perlengkapan') {
             if (srcAcaraIndex === tgtAcaraIndex) {
               // Pindahkan perlengkapan dalam acara yang sama
-              const perlengkapan = userData[currentTab][srcAcaraIndex].perlengkapan;
+              const perlengkapan = acaraList[srcAcaraIndex].perlengkapan;
               const moved = perlengkapan.splice(srcIndex, 1)[0];
               perlengkapan.splice(tgtPerlengkapanIndex, 0, moved);
               saveData();
               renderTable();
             } else {
               // Pindahkan perlengkapan ke acara lain
-              const srcItem = userData[currentTab][srcAcaraIndex].perlengkapan.splice(srcIndex, 1)[0];
-              userData[currentTab][tgtAcaraIndex].perlengkapan.splice(tgtPerlengkapanIndex, 0, srcItem);
+              const srcItem = acaraList[srcAcaraIndex].perlengkapan.splice(srcIndex, 1)[0];
+              acaraList[tgtAcaraIndex].perlengkapan.splice(tgtPerlengkapanIndex, 0, srcItem);
               saveData();
               renderTable();
             }
@@ -1616,13 +1473,11 @@
 
       // Render tabel dengan data acara
       function renderTable() {
-        const acaraList = userData[currentTab];
-        
         // Cek jika tidak ada acara
         if (acaraList.length === 0) {
           tbody.innerHTML = `
             <tr class="empty-table-row">
-              <td colspan="5">
+              <td colspan="6">
                 <div class="empty-table">
                   <i class="fas fa-receipt"></i>
                   <h3>Belum ada data anggaran</h3>
@@ -1646,7 +1501,7 @@
           trAcara.setAttribute('draggable', 'true');
 
           const tdAcara = document.createElement('td');
-          tdAcara.colSpan = 5;
+          tdAcara.colSpan = 6;
           tdAcara.style.userSelect = 'none';
           tdAcara.style.position = 'relative';
           tdAcara.style.padding = '18px 20px';
@@ -1702,6 +1557,25 @@
           scheduleDiv.appendChild(timeInput);
           tdAcara.appendChild(scheduleDiv);
 
+          // Tombol tambah perlengkapan
+          const addPerlengkapanBtn = document.createElement('button');
+          addPerlengkapanBtn.innerHTML = '<i class="fas fa-plus"></i> Tambah Perlengkapan';
+          addPerlengkapanBtn.className = 'add-perlengkapan-btn';
+          addPerlengkapanBtn.title = 'Tambah perlengkapan baru untuk acara ini';
+          addPerlengkapanBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            // Tambahkan perlengkapan kosong
+            acara.perlengkapan.push({
+              name: 'Perlengkapan Baru',
+              quantity: 1,
+              amount: 0,
+              ready: false
+            });
+            saveData();
+            renderTable();
+          });
+          tdAcara.appendChild(addPerlengkapanBtn);
+
           // Tombol hapus acara
           const btnRemoveAcara = document.createElement('button');
           btnRemoveAcara.innerHTML = '<i class="fas fa-trash"></i> Hapus Acara';
@@ -1710,7 +1584,7 @@
           btnRemoveAcara.addEventListener('click', e => {
             e.stopPropagation();
             if (confirm(`Hapus acara "${acara.name}" beserta semua perlengkapannya?`)) {
-              userData[currentTab].splice(acaraIndex, 1);
+              acaraList.splice(acaraIndex, 1);
               saveData();
               renderTable();
             }
@@ -1797,6 +1671,20 @@
             });
             trPerlengkapan.appendChild(tdAmount);
 
+            // Status persiapan
+            const tdStatus = document.createElement('td');
+            const statusBtn = document.createElement('button');
+            statusBtn.className = `status-btn ${item.ready ? 'ready' : 'not-ready'}`;
+            statusBtn.title = item.ready ? 'Sudah siap' : 'Belum siap';
+            statusBtn.addEventListener('click', () => {
+              item.ready = !item.ready;
+              statusBtn.className = `status-btn ${item.ready ? 'ready' : 'not-ready'}`;
+              statusBtn.title = item.ready ? 'Sudah siap' : 'Belum siap';
+              saveData();
+            });
+            tdStatus.appendChild(statusBtn);
+            trPerlengkapan.appendChild(tdStatus);
+
             // Aksi hapus perlengkapan
             const tdAction = document.createElement('td');
             const btnRemove = document.createElement('button');
@@ -1861,7 +1749,7 @@
         }
 
         // Cari acara, buat baru jika belum ada
-        let acara = userData[currentTab].find(a => a.name.toLowerCase() === acaraName.toLowerCase());
+        let acara = acaraList.find(a => a.name.toLowerCase() === acaraName.toLowerCase());
         if (!acara) {
           acara = { 
             name: acaraName, 
@@ -1869,12 +1757,19 @@
             time: eventTime || '12:00',
             perlengkapan: []
           };
-          userData[currentTab].push(acara);
-          // Update datalist
-          updateAcaraDatalist();
+          acaraList.push(acara);
+          // Tambahkan ke daftar autocomplete
+          const option = document.createElement('option');
+          option.value = acaraName;
+          acaraDatalist.appendChild(option);
         }
 
-        acara.perlengkapan.push({ name: perlengkapanName, quantity, amount });
+        acara.perlengkapan.push({ 
+          name: perlengkapanName, 
+          quantity, 
+          amount,
+          ready: false // Status awal: belum siap
+        });
 
         saveData();
         renderTable();
@@ -1893,7 +1788,7 @@
 
       // Export to PDF (simplified)
       exportPdfBtn.addEventListener('click', () => {
-        if (userData[currentTab].length === 0) {
+        if (acaraList.length === 0) {
           showNotification('Tidak ada data untuk diexport', true);
           return;
         }
@@ -1907,7 +1802,6 @@
 
       // Fungsi untuk export ke Excel
       function exportToExcel() {
-        const acaraList = userData[currentTab];
         if (acaraList.length === 0) {
           showNotification('Tidak ada data untuk diexport', true);
           return;
@@ -1926,7 +1820,6 @@
           // Membuat sheet untuk ringkasan
           const summaryData = [
             ["RINGKASAN ANGGARAN PERNIKAHAN"],
-            ["Tab", currentTab === 'saya' ? "Punya Saya" : "Punya Istri"],
             ["Total Acara", acaraList.length],
             ["Total Perlengkapan", acaraList.reduce((total, acara) => total + acara.perlengkapan.length, 0)],
             ["Total Anggaran", formatRupiah(acaraList.reduce((total, acara) => 
@@ -1950,23 +1843,28 @@
               [acara.name.toUpperCase()],
               [`Tanggal: ${acara.date || '-'}`, `Waktu: ${acara.time || '-'}`],
               [],
-              ["Perlengkapan", "Jumlah", "Biaya (Rp)"]
+              ["Perlengkapan", "Jumlah", "Biaya (Rp)", "Status"]
             ];
             
             acara.perlengkapan.forEach(item => {
-              acaraData.push([item.name, item.quantity, item.amount]);
+              acaraData.push([
+                item.name, 
+                item.quantity, 
+                item.amount,
+                item.ready ? "Sudah Siap" : "Belum Siap"
+              ]);
             });
             
             // Menambahkan total per acara
             const totalAcara = acara.perlengkapan.reduce((sum, item) => sum + item.amount, 0);
-            acaraData.push([], ["TOTAL ACARA", "", formatRupiah(totalAcara)]);
+            acaraData.push([], ["TOTAL ACARA", "", formatRupiah(totalAcara), ""]);
             
             const ws_acara = XLSX.utils.aoa_to_sheet(acaraData);
             XLSX.utils.book_append_sheet(wb, ws_acara, acara.name.substring(0, 30));
           });
           
           // Mengekspor file Excel
-          const fileName = `Budget_Pernikahan_${currentTab}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+          const fileName = `Budget_Pernikahan_${new Date().toISOString().slice(0, 10)}.xlsx`;
           XLSX.writeFile(wb, fileName);
           
           showNotification('Data berhasil diexport ke Excel!');
@@ -1979,51 +1877,34 @@
       exportExcelBtn.addEventListener('click', exportToExcel);
 
       // Login functionality
-      loginForm.addEventListener('submit', e => {
-        e.preventDefault();
+      loginBtn.addEventListener('click', () => {
+        // Login langsung tanpa username/password
+        currentUser = 'pandajawa';
+        userNameEl.textContent = currentUser;
         
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+        // Hide login, show app
+        loginContainer.style.display = 'none';
+        mainApp.style.display = 'block';
         
-        // Perubahan password di sini
-        if (username === '' && password === '') {
-          // Login successful
-          currentUser = username;
-          userNameEl.textContent = username;
-          
-          // Hide login, show app
-          loginContainer.style.display = 'none';
-          mainApp.style.display = 'block';
-          
-          // Load user data
-          loadData();
-          
-          // Set default date
-          const today = new Date();
-          const formattedDate = today.toISOString().split('T')[0];
-          eventDateInput.value = formattedDate;
-          eventTimeInput.value = '12:00';
-          
-          showNotification('Login berhasil! Selamat datang kembali, ' + username);
-        } else {
-          // Login failed
-          showNotification('Username atau password salah', true);
-          document.getElementById('password').value = '';
-          document.getElementById('password').focus();
-        }
+        // Load user data
+        loadData();
+        
+        // Set default date
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0];
+        eventDateInput.value = formattedDate;
+        eventTimeInput.value = '12:00';
+        
+        showNotification('Login berhasil! Selamat datang, pandajawa');
       });
 
       // Logout functionality
       logoutBtn.addEventListener('click', () => {
         currentUser = null;
-        userData.saya = [];
-        userData.istri = [];
-        currentTab = 'saya';
+        acaraList.length = 0;
         mainApp.style.display = 'none';
         loginContainer.style.display = 'block';
-        document.getElementById('username').value = '';
-        document.getElementById('password').value = '';
-        document.getElementById('username').focus();
+        showNotification('Anda telah logout');
       });
 
       // Theme toggle
@@ -2038,13 +1919,6 @@
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
       });
 
-      // Event listeners for tabs
-      tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          switchTab(button.dataset.tab);
-        });
-      });
-
       // Apply saved theme
       window.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('theme');
@@ -2054,14 +1928,7 @@
         } else {
           themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
         }
-        
-        // Focus username field on login screen
-        document.getElementById('username').focus();
       });
-      
-      // Initialize tab indicator
-      window.addEventListener('load', updateTabIndicator);
-      window.addEventListener('resize', updateTabIndicator);
     })();
   </script>
 </body>
