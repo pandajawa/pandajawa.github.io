@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Perencana Budgeting Pernikahan</title>
+  <meta name="description" content="Aplikasi budgeting pernikahan interaktif — atur anggaran untuk calon suami dan istri secara terpisah, lihat ringkasan dan grafik, simpan otomatis." />
+  
+  <!-- Tambahkan Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --muted: #9aa4b2;
+      --accent: #7c3aed;
+      --accent-2: #06b6d4;
+      --glass: rgba(255, 255, 255, 0.04);
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 16px;
+      --shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
+      --husband: rgba(124, 58, 237, 0.3);
+      --wife: rgba(6, 182, 212, 0.3);
+      --joint: rgba(16, 185, 129, 0.3);
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body { height: 100%; }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(180deg, #071028 0%, var(--bg) 100%);
+      color: #e6eef8;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 24px;
+    }
+
+    .container {
+      width: 1200px;
+      max-width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    header.app-card {
+      grid-column: 1/-1;
+      padding: 20px 24px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 6px 20px rgba(104, 51, 255, 0.18);
+    }
+    
+    h1 { font-size: 18px; margin: 0; }
+    p.subtitle { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .main-card, .side-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      padding: 18px;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    /* Tab styles */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 15px;
+    }
+    
+    .tab {
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      background: var(--glass);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .tab:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    
+    .tab.active {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+    }
+    
+    .tab.husband.active { background: linear-gradient(90deg, #7c3aed, #5b21b6); }
+    .tab.wife.active { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+    .tab.joint.active { background: linear-gradient(90deg, #10b981, #059669); }
+    .tab.archive.active { background: linear-gradient(90deg, #f59e0b, #d97706); }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    
+    .btn {
+      background: var(--glass);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px 12px;
+      border-radius: 10px;
+      color: inherit;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+    
+    .btn.primary {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: white;
+      border: none;
+      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.18);
+    }
+    
+    .btn.ghost {
+      background: transparent;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+    
+    .btn.success { background: rgba(16, 185, 129, 0.15); }
+    .btn.danger { background: rgba(239, 68, 68, 0.15); }
+
+    form.add-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    
+    form.add-row input, form.add-row select {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255, 255, 255, 0.02);
+      color: inherit;
+      outline: none;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: border 0.2s;
+    }
+    
+    form.add-row input:focus, form.add-row select:focus {
+      border-color: var(--accent);
+    }
+    
+    form.add-row input[type="number"] { width: 160px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    thead th {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: left;
+      padding: 10px 6px;
+      position: sticky;
+      top: 0;
+      background: var(--card);
+    }
+    
+    tbody td {
+      padding: 10px 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.02);
+      vertical-align: middle;
+    }
+    
+    .pill {
+      display: inline-block;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.025);
+      font-size: 13px;
+    }
+    
+    .husband-badge { background: rgba(124, 58, 237, 0.15); }
+    .wife-badge { background: rgba(6, 182, 212, 0.15); }
+    .joint-badge { background: rgba(16, 185, 129, 0.15); }
+
+    .muted { color: var(--muted); font-size: 13px; }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(0, 0, 0, 0.02));
+    }
+
+    /* Progress bar */
+    .progress {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    
+    .progress > i {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    /* Summary */
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.02));
+    }
+    
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .summary-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.02));
+      border-radius: 12px;
+      padding: 15px;
+    }
+    
+    .summary-card.husband { border-left: 3px solid #7c3aed; }
+    .summary-card.wife { border-left: 3px solid #06b6d4; }
+    .summary-card.joint { border-left: 3px solid #10b981; }
+
+    /* Chart */
+    .chart-wrap {
+      display: grid;
+      place-items: center;
+      padding: 8px;
+    }
+    
+    .chart-container {
+      width: 100%;
+      position: relative;
+      height: 300px;
+    }
+    
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Responsive */
+    @media (max-width: 1000px) {
+      .container { grid-template-columns: 1fr; }
+      .tabs { flex-wrap: wrap; }
+      .tab { flex: 1; text-align: center; }
+    }
+    
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      .main-card, .side-card { padding: 15px; }
+      form.add-row input, form.add-row select { width: 100%; }
+      .total-row { flex-direction: column; align-items: flex-start; gap: 15px; }
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Helpers */
+    .right { text-align: right; }
+    .muted-small { color: var(--muted); font-size: 12px; }
+    .small { font-size: 13px; }
+    .danger { color: var(--danger); }
+    .success { color: var(--success); }
+    .editable { 
+      background: transparent; 
+      border: none; 
+      color: inherit; 
+      padding: 6px; 
+      border-radius: 8px; 
+      width: 100%;
+      border: 1px solid transparent;
+    }
+    
+    .editable:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(124, 58, 237, 0.05);
+    }
+    
+    .archived-row { opacity: 0.7; background: rgba(249, 115, 22, 0.05); }
+    
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 10px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      border-left: 4px solid var(--success);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .notification.error { border-left-color: var(--danger); }
+    
+    .icon-btn {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="app-card">
+      <div class="brand">
+        <div class="logo">WP</div>
+        <div>
+          <h1>Perencana Budgeting Pernikahan</h1>
+          <p class="subtitle">Atur anggaran untuk calon suami & istri secara terpisah, pantau realisasi secara real-time.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div class="muted-small">Auto-simpan ke browser</div>
+        <button class="btn" id="btn-export">Export CSV</button>
+        <button class="btn ghost" id="btn-reset">Reset</button>
+      </div>
+    </header>
+
+    <!-- Main area -->
+    <main class="main-card">
+      <div class="tabs">
+        <div class="tab husband active" data-tab="husband">Calon Suami</div>
+        <div class="tab wife" data-tab="wife">Calon Istri</div>
+        <div class="tab joint" data-tab="joint">Gabungan</div>
+        <div class="tab archive" data-tab="archive">Arsip (0)</div>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px">
+        <div>
+          <h2 style="margin: 0; font-size: 16px">Daftar Kategori & Pengeluaran</h2>
+          <div class="muted-small" id="tab-description">Tambahkan kategori untuk calon suami</div>
+        </div>
+        <div class="controls">
+          <button class="btn" id="btn-add-sample">Tambah Contoh</button>
+          <button class="btn" id="btn-clear-archived">Hapus Arsip</button>
+        </div>
+      </div>
+
+      <form class="add-row" id="form-add">
+        <input id="name" placeholder="Nama kategori (mis. Catering)" required />
+        <input id="budget" type="number" min="0" step="1000" placeholder="Anggaran (Rp)" required />
+        <input id="spent" type="number" min="0" step="1000" placeholder="Terpakai (Rp)" value="0" />
+        <select id="priority">
+          <option value="Utama">Utama</option>
+          <option value="Penting">Penting</option>
+          <option value="Opsional">Opsional</option>
+        </select>
+        <button class="btn primary" type="submit">Tambah</button>
+      </form>
+
+      <div style="overflow: auto; max-height: 440px">
+        <table id="table">
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>Prioritas</th>
+              <th class="right">Anggaran (Rp)</th>
+              <th class="right">Terpakai (Rp)</th>
+              <th class="right">Sisa</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="total-row">
+        <div>
+          <div style="font-weight: 600">Ringkasan</div>
+          <div class="muted-small" id="tab-summary">Jumlah kategori, anggaran total, dan pengeluaran untuk calon suami</div>
+        </div>
+        <div style="min-width: 260px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px">
+            <div class="muted-small">Anggaran total</div>
+            <div id="total-budget">Rp 0</div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px">
+            <div class="muted-small">Total terpakai</div>
+            <div id="total-spent">Rp 0</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <div class="muted-small">Realisasi</div>
+            <div style="flex: 1">
+              <div class="progress">
+                <i id="progress-bar" style="width: 0%"></i>
+              </div>
+            </div>
+            <div id="progress-label" class="muted-small">0%</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Side area -->
+    <aside class="side-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px">
+        <div>
+          <h3 style="margin: 0">Ringkasan Visual</h3>
+          <div class="muted-small">Visualisasi pembagian anggaran</div>
+        </div>
+        <div class="muted-small">Simpan otomatis</div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="chart" width="400" height="300" aria-label="Grafik pembagian anggaran"></canvas>
+      </div>
+      
+      <div class="summary-grid">
+        <div class="summary-card husband">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px">
+            <div style="font-weight: 600">Calon Suami</div>
+            <span class="pill husband-badge">Anggaran</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 5px">
+            <div class="muted-small">Total</div>
+            <div id="husband-total">Rp 0</div>
+          </div>
+          <div style="display: flex; justify-content: space-between">
+            <div class="muted-small">Terpakai</div>
+            <div id="husband-spent">Rp 0</div>
+          </div>
+        </div>
+        
+        <div class="summary-card wife">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px">
+            <div style="font-weight: 600">Calon Istri</div>
+            <span class="pill wife-badge">Anggaran</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 5px">
+            <div class="muted-small">Total</div>
+            <div id="wife-total">Rp 0</div>
+          </div>
+          <div style="display: flex; justify-content: space-between">
+            <div class="muted-small">Terpakai</div>
+            <div id="wife-spent">Rp 0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-item" style="margin-top: 15px">
+        <div>
+          <div style="font-weight: 600">Sisa anggaran</div>
+          <div class="muted-small">Jika bilangan negatif = overspend</div>
+        </div>
+        <div id="leftover" style="font-weight: 700">Rp 0</div>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 15px">
+        <button class="btn" id="btn-save">Simpan</button>
+        <button class="btn" id="btn-download-json">Download JSON</button>
+        <button class="btn" id="btn-import">Import Data</button>
+      </div>
+    </aside>
+  </div>
+  
+  <div class="notification" id="notification">Data berhasil disimpan!</div>
+  
+  <input type="file" id="file-import" accept=".json" style="display: none" />
+
+  <!-- JavaScript -->
+  <script>
+    /* Simple utils */
+    const rupiah = n => {
+      const v = Number(n) || 0;
+      return 'Rp ' + v.toLocaleString('id-ID');
+    }
+    
+    const showNotification = (message, isError = false) => {
+      const notif = document.getElementById('notification');
+      notif.textContent = message;
+      notif.className = isError ? 'notification error' : 'notification';
+      notif.classList.add('show');
+      
+      setTimeout(() => {
+        notif.classList.remove('show');
+      }, 3000);
+    }
+
+    /* App state stored in localStorage */
+    const STORAGE_KEY = 'wedding_budget_v2';
+    let data = {
+      husband: [],
+      wife: [],
+      archive: []
+    };
+    
+    let currentTab = 'husband';
+    let chart = null;
+
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
+
+    // DOM refs
+    const tbody = document.querySelector('#table tbody');
+    const form = document.getElementById('form-add');
+    const nameIn = document.getElementById('name');
+    const budgetIn = document.getElementById('budget');
+    const spentIn = document.getElementById('spent');
+    const priorityIn = document.getElementById('priority');
+    
+    const tabButtons = $$('.tab');
+    const tabDescription = $('#tab-description');
+    const tabSummary = $('#tab-summary');
+    const archiveTab = $$('.tab')[3];
+
+    const totalBudgetEl = document.getElementById('total-budget');
+    const totalSpentEl = document.getElementById('total-spent');
+    const progressBar = document.getElementById('progress-bar');
+    const progressLabel = document.getElementById('progress-label');
+    const leftoverEl = document.getElementById('leftover');
+    
+    const husbandTotal = $('#husband-total');
+    const husbandSpent = $('#husband-spent');
+    const wifeTotal = $('#wife-total');
+    const wifeSpent = $('#wife-spent');
+
+    const canvas = document.getElementById('chart');
+    const ctx = canvas.getContext('2d');
+
+    /* Initialize */
+    function init() {
+      load();
+      setupEventListeners();
+      renderTabs();
+      render();
+      drawChart();
+    }
+    
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) { 
+          const savedData = JSON.parse(raw);
+          
+          // Migrate from v1 if needed
+          if (Array.isArray(savedData)) {
+            data = {
+              husband: savedData.filter(item => !item.archived),
+              wife: [],
+              archive: savedData.filter(item => item.archived)
+            };
+          } else {
+            data = savedData;
+          }
+        }
+      } catch(e) { 
+        console.error('Error loading data', e);
+        data = {
+          husband: [],
+          wife: [],
+          archive: []
+        };
+      }
+      updateArchiveCount();
+    }
+    
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      updateArchiveCount();
+      showNotification('Data berhasil disimpan!');
+    }
+    
+    function updateArchiveCount() {
+      archiveTab.innerHTML = `Arsip (${data.archive.length})`;
+    }
+    
+    function setupEventListeners() {
+      // Tab switching
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const tab = button.dataset.tab;
+          switchTab(tab);
+        });
+      });
+      
+      // Add form
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const name = nameIn.value.trim();
+        const budget = Number(budgetIn.value) || 0;
+        const spent = Number(spentIn.value) || 0;
+        const priority = priorityIn.value;
+        
+        if (!name) return showNotification('Nama kategori harus diisi', true);
+        
+        const newItem = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+          name,
+          budget,
+          spent,
+          priority,
+          tab: currentTab,
+          archived: false
+        };
+        
+        data[currentTab].push(newItem);
+        nameIn.value = ''; 
+        budgetIn.value = ''; 
+        spentIn.value = '0'; 
+        priorityIn.value = 'Utama';
+        
+        save();
+        render();
+        drawChart();
+      });
+      
+      // Buttons
+      $('#btn-export').addEventListener('click', () => exportCSV());
+      $('#btn-reset').addEventListener('click', () => {
+        if (confirm('Reset semua data?')) {
+          localStorage.removeItem(STORAGE_KEY); 
+          data = { husband: [], wife: [], archive: [] };
+          render();
+          drawChart();
+          showNotification('Semua data telah direset');
+        }
+      });
+      
+      $('#btn-save').addEventListener('click', () => {
+        save();
+        showNotification('Data berhasil disimpan!');
+      });
+      
+      $('#btn-download-json').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); 
+        a.href = url; 
+        a.download = 'wedding-budget.json'; 
+        a.click(); 
+        URL.revokeObjectURL(url);
+        showNotification('File JSON berhasil diunduh');
+      });
+      
+      $('#btn-import').addEventListener('click', () => {
+        $('#file-import').click();
+      });
+      
+      document.getElementById('file-import').addEventListener('change', handleFileImport);
+      
+      $('#btn-add-sample').addEventListener('click', () => {
+        const sampleHusband = [
+          { id: 's1' + Date.now(), name: 'Sewa Mobil', budget: 5000000, spent: 2000000, priority: 'Utama', tab: 'husband' },
+          { id: 's2' + Date.now(), name: 'Souvenir Pria', budget: 3000000, spent: 1000000, priority: 'Penting', tab: 'husband' }
+        ];
+        
+        const sampleWife = [
+          { id: 'w1' + Date.now(), name: 'Makeup', budget: 7000000, spent: 3500000, priority: 'Utama', tab: 'wife' },
+          { id: 'w2' + Date.now(), name: 'Gaun Pengantin', budget: 15000000, spent: 8000000, priority: 'Utama', tab: 'wife' },
+          { id: 'w3' + Date.now(), name: 'Bunga', budget: 2500000, spent: 1500000, priority: 'Penting', tab: 'wife' }
+        ];
+        
+        data.husband = data.husband.concat(sampleHusband);
+        data.wife = data.wife.concat(sampleWife);
+        
+        save();
+        render();
+        drawChart();
+        showNotification('Contoh data telah ditambahkan');
+      });
+      
+      $('#btn-clear-archived').addEventListener('click', () => {
+        if (data.archive.length === 0) {
+          showNotification('Tidak ada data di arsip', true);
+          return;
+        }
+        
+        if (confirm(`Hapus permanen ${data.archive.length} item dari arsip?`)) {
+          data.archive = [];
+          save();
+          if (currentTab === 'archive') render();
+          showNotification('Arsip berhasil dikosongkan');
+        }
+      });
+    }
+    
+    function generateUniqueId() {
+      return Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    }
+    
+    function handleFileImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const importedData = JSON.parse(event.target.result);
+          
+          // Basic validation
+          if (importedData.husband || importedData.wife || importedData.archive) {
+            // Merge husband data
+            if (importedData.husband) {
+              importedData.husband.forEach(item => {
+                // Add ID if missing
+                if (!item.id) item.id = generateUniqueId();
+                // Add to husband array
+                data.husband.push(item);
+              });
+            }
+            
+            // Merge wife data
+            if (importedData.wife) {
+              importedData.wife.forEach(item => {
+                if (!item.id) item.id = generateUniqueId();
+                data.wife.push(item);
+              });
+            }
+            
+            // Merge archive data
+            if (importedData.archive) {
+              importedData.archive.forEach(item => {
+                if (!item.id) item.id = generateUniqueId();
+                data.archive.push(item);
+              });
+            }
+            
+            save();
+            render();
+            drawChart();
+            showNotification(`Data berhasil diimpor: ${importedData.husband?.length || 0} suami, ${importedData.wife?.length || 0} istri, ${importedData.archive?.length || 0} arsip`);
+          } else {
+            showNotification('Format file tidak valid', true);
+          }
+        } catch (error) {
+          console.error('Error importing data', error);
+          showNotification('Gagal mengimpor data', true);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = ''; // Reset input
+    }
+    
+    function switchTab(tab) {
+      currentTab = tab;
+      renderTabs();
+      render();
+      drawChart();
+    }
+    
+    function renderTabs() {
+      tabButtons.forEach(button => {
+        button.classList.remove('active');
+        if (button.dataset.tab === currentTab) {
+          button.classList.add('active');
+        }
+      });
+      
+      // Update descriptions
+      switch(currentTab) {
+        case 'husband':
+          tabDescription.textContent = 'Tambahkan kategori untuk calon suami';
+          tabSummary.textContent = 'Jumlah kategori, anggaran total, dan pengeluaran untuk calon suami';
+          break;
+        case 'wife':
+          tabDescription.textContent = 'Tambahkan kategori untuk calon istri';
+          tabSummary.textContent = 'Jumlah kategori, anggaran total, dan pengeluaran untuk calon istri';
+          break;
+        case 'joint':
+          tabDescription.textContent = 'Gabungan semua anggaran calon suami dan istri';
+          tabSummary.textContent = 'Ringkasan gabungan anggaran dan pengeluaran';
+          break;
+        case 'archive':
+          tabDescription.textContent = 'Kategori yang telah diarsipkan';
+          tabSummary.textContent = 'Kategori yang telah diarsipkan';
+          break;
+      }
+    }
+
+    // Render table based on current tab
+    function render() {
+      tbody.innerHTML = '';
+      
+      let items = [];
+      
+      switch(currentTab) {
+        case 'husband': items = data.husband; break;
+        case 'wife': items = data.wife; break;
+        case 'joint': items = [...data.husband, ...data.wife]; break;
+        case 'archive': items = data.archive; break;
+      }
+      
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--muted)">Tidak ada data</td></tr>`;
+        syncUI();
+        return;
+      }
+      
+      items.forEach((row) => {
+        const tr = document.createElement('tr');
+        if (row.archived || currentTab === 'archive') {
+          tr.classList.add('archived-row');
+        }
+        
+        const sourceBadge = row.tab === 'husband' ? 
+          '<span class="pill husband-badge">Suami</span>' : 
+          '<span class="pill wife-badge">Istri</span>';
+        
+        tr.innerHTML = `
+          <td>
+            <div style="display: flex; gap: 8px; align-items: center">
+              <input class="editable" data-key="name" data-id="${row.id}" value="${escapeHtml(row.name)}" />
+              ${currentTab === 'joint' || currentTab === 'archive' ? sourceBadge : ''}
+            </div>
+          </td>
+          <td>
+            <select class="editable" data-key="priority" data-id="${row.id}">
+              <option ${row.priority === 'Utama' ? 'selected' : ''}>Utama</option>
+              <option ${row.priority === 'Penting' ? 'selected' : ''}>Penting</option>
+              <option ${row.priority === 'Opsional' ? 'selected' : ''}>Opsional</option>
+            </select>
+          </td>
+          <td class="right">
+            <input class="editable" data-key="budget" data-id="${row.id}" value="${row.budget}" type="number" min="0" step="1000" />
+          </td>
+          <td class="right">
+            <input class="editable" data-key="spent" data-id="${row.id}" value="${row.spent}" type="number" min="0" step="1000" />
+          </td>
+          <td class="right">${rupiah(row.budget - row.spent)}</td>
+          <td class="right">
+            ${currentTab === 'archive' ? 
+              `<button class="btn success" data-action="restore" data-id="${row.id}">Pulihkan</button>` : 
+              `<button class="btn danger" data-action="archive" data-id="${row.id}">Arsipkan</button>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      attachEditors();
+      syncUI();
+      updateArchiveCount();
+    }
+    
+    function attachEditors() {
+      // Editable fields
+      document.querySelectorAll('.editable').forEach(el => {
+        el.addEventListener('change', e => {
+          const id = e.target.dataset.id;
+          const key = e.target.dataset.key;
+          let val = e.target.value;
+          
+          if (key === 'budget' || key === 'spent') val = Number(val) || 0;
+          
+          // Find item in data
+          let item = findItemById(id);
+          
+          if (item) {
+            item[key] = val;
+            save();
+            render();
+            drawChart();
+          }
+        });
+      });
+      
+      // Action buttons (archive/restore)
+      document.querySelectorAll('button[data-action]').forEach(b => {
+        b.addEventListener('click', e => {
+          const id = e.target.dataset.id;
+          const action = e.target.dataset.action;
+          
+          if (action === 'archive') {
+            archiveItem(id);
+          } else if (action === 'restore') {
+            restoreItem(id);
+          }
+        });
+      });
+    }
+    
+    function findItemById(id) {
+      // Search in husband, wife, and archive
+      let item = data.husband.find(i => i.id === id) || 
+                data.wife.find(i => i.id === id) || 
+                data.archive.find(i => i.id === id);
+      return item;
+    }
+    
+    function archiveItem(id) {
+      let item = null;
+      let source = null;
+      
+      // Find in husband
+      const husbandIdx = data.husband.findIndex(i => i.id === id);
+      if (husbandIdx !== -1) {
+        item = data.husband[husbandIdx];
+        data.husband.splice(husbandIdx, 1);
+        source = 'husband';
+      }
+      
+      // Find in wife
+      if (!item) {
+        const wifeIdx = data.wife.findIndex(i => i.id === id);
+        if (wifeIdx !== -1) {
+          item = data.wife[wifeIdx];
+          data.wife.splice(wifeIdx, 1);
+          source = 'wife';
+        }
+      }
+      
+      if (item && source) {
+        item.archived = true;
+        item.sourceTab = source; // Remember where it came from for restoration
+        data.archive.push(item);
+        save();
+        render();
+        drawChart();
+        showNotification('Kategori diarsipkan');
+      }
+    }
+    
+    function restoreItem(id) {
+      const archiveIdx = data.archive.findIndex(i => i.id === id);
+      if (archiveIdx === -1) return;
+      
+      const item = data.archive[archiveIdx];
+      data.archive.splice(archiveIdx, 1);
+      
+      // Restore to original tab
+      if (item.sourceTab === 'husband') {
+        data.husband.push(item);
+      } else if (item.sourceTab === 'wife') {
+        data.wife.push(item);
+      }
+      
+      item.archived = false;
+      delete item.sourceTab;
+      
+      save();
+      render();
+      drawChart();
+      showNotification('Kategori dipulihkan');
+    }
+
+    function syncUI() {
+      // Calculate totals for current view
+      let currentItems = [];
+      
+      switch(currentTab) {
+        case 'husband': currentItems = data.husband; break;
+        case 'wife': currentItems = data.wife; break;
+        case 'joint': currentItems = [...data.husband, ...data.wife]; break;
+        case 'archive': currentItems = data.archive; break;
+      }
+      
+      const totalBudget = currentItems.reduce((s, r) => s + (Number(r.budget) || 0), 0);
+      const totalSpent = currentItems.reduce((s, r) => s + (Number(r.spent) || 0), 0);
+      
+      totalBudgetEl.textContent = rupiah(totalBudget);
+      totalSpentEl.textContent = rupiah(totalSpent);
+      
+      const percent = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+      progressBar.style.width = Math.min(percent, 200) + '%';
+      progressLabel.textContent = percent + '%';
+      
+      leftoverEl.textContent = rupiah(totalBudget - totalSpent);
+      
+      // Update summary for husband and wife
+      const husbandTotalBudget = data.husband.reduce((s, r) => s + (Number(r.budget) || 0), 0);
+      const husbandTotalSpent = data.husband.reduce((s, r) => s + (Number(r.spent) || 0), 0);
+      
+      const wifeTotalBudget = data.wife.reduce((s, r) => s + (Number(r.budget) || 0), 0);
+      const wifeTotalSpent = data.wife.reduce((s, r) => s + (Number(r.spent) || 0), 0);
+      
+      husbandTotal.textContent = rupiah(husbandTotalBudget);
+      husbandSpent.textContent = rupiah(husbandTotalSpent);
+      wifeTotal.textContent = rupiah(wifeTotalBudget);
+      wifeSpent.textContent = rupiah(wifeTotalSpent);
+    }
+
+    // Export CSV
+    function exportCSV() {
+      const headers = ['Tab', 'Nama', 'Prioritas', 'Anggaran', 'Terpakai', 'Sisa'];
+      const rows = [headers];
+      
+      // Add husband data
+      data.husband.forEach(r => {
+        rows.push(['Calon Suami', r.name, r.priority, r.budget, r.spent, (r.budget - r.spent)]);
+      });
+      
+      // Add wife data
+      data.wife.forEach(r => {
+        rows.push(['Calon Istri', r.name, r.priority, r.budget, r.spent, (r.budget - r.spent)]);
+      });
+      
+      // Add archived data
+      data.archive.forEach(r => {
+        rows.push(['Arsip', r.name, r.priority, r.budget, r.spent, (r.budget - r.spent)]);
+      });
+      
+      const csv = rows.map(r => r.map(cell => '"' + String(cell).replace(/"/g, '""') + '"').join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); 
+      a.href = url; 
+      a.download = 'wedding-budget.csv'; 
+      a.click(); 
+      URL.revokeObjectURL(url);
+      showNotification('File CSV berhasil diunduh');
+    }
+
+    // Chart drawing
+    function drawChart() {
+      if (chart) {
+        chart.destroy();
+      }
+      
+      // Prepare data for chart
+      const husbandCategories = data.husband.map(item => ({
+        name: item.name,
+        budget: item.budget,
+        spent: item.spent,
+        color: '#7c3aed'
+      }));
+      
+      const wifeCategories = data.wife.map(item => ({
+        name: item.name,
+        budget: item.budget,
+        spent: item.spent,
+        color: '#06b6d4'
+      }));
+      
+      let chartData = [];
+      let chartType = 'doughnut';
+      let chartOptions = {};
+      
+      switch(currentTab) {
+        case 'husband': chartData = husbandCategories; break;
+        case 'wife': chartData = wifeCategories; break;
+        case 'joint': chartData = [...husbandCategories, ...wifeCategories]; break;
+        case 'archive': 
+          chartData = data.archive.map(item => ({
+            name: item.name,
+            budget: item.budget,
+            spent: item.spent,
+            color: item.tab === 'husband' ? '#7c3aed' : '#06b6d4'
+          }));
+          break;
+      }
+      
+      if (chartData.length === 0) {
+        // Draw empty state
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.beginPath();
+        ctx.arc(canvas.width/2, canvas.height/2, 80, 0, Math.PI*2);
+        ctx.fill();
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.font = '16px Inter, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Tidak ada data', canvas.width/2, canvas.height/2 - 10);
+        ctx.font = '13px Inter, Arial';
+        ctx.fillText('Tambahkan data untuk melihat grafik', canvas.width/2, canvas.height/2 + 15);
+        return;
+      }
+      
+      if (currentTab === 'archive') {
+        // For archive, show a bar chart
+        chartType = 'bar';
+        chartData = chartData.sort((a, b) => b.budget - a.budget);
+        
+        chart = new Chart(ctx, {
+          type: chartType,
+          data: {
+            labels: chartData.map(item => item.name),
+            datasets: [{
+              label: 'Anggaran',
+              data: chartData.map(item => item.budget),
+              backgroundColor: chartData.map(item => item.color),
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              title: {
+                display: true,
+                text: 'Anggaran Kategori Arsip',
+                color: 'rgba(255, 255, 255, 0.8)',
+                font: { size: 14 }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `Anggaran: ${rupiah(context.raw)}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  callback: function(value) {
+                    if (value >= 1000000) return 'Rp ' + (value/1000000).toFixed(1) + ' jt';
+                    return 'Rp ' + value;
+                  }
+                },
+                grid: { color: 'rgba(255, 255, 255, 0.05)' }
+              },
+              x: {
+                ticks: { color: 'rgba(255, 255, 255, 0.6)' },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      } else {
+        // For other tabs, show doughnut chart
+        chart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: chartData.map(item => item.name),
+            datasets: [{
+              data: chartData.map(item => item.budget),
+              backgroundColor: chartData.map(item => item.color),
+              borderColor: 'rgba(255, 255, 255, 0.05)',
+              borderWidth: 1,
+              hoverOffset: 10
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  padding: 15,
+                  font: { size: 12 }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const value = context.raw;
+                    const total = context.chart.getDatasetMeta(0).total;
+                    const percent = total > 0 ? Math.round((value / total) * 100) : 0;
+                    return `${context.label}: ${rupiah(value)} (${percent}%)`;
+                  }
+                }
+              },
+              title: {
+                display: true,
+                text: currentTab === 'husband' ? 'Anggaran Calon Suami' : 
+                      currentTab === 'wife' ? 'Anggaran Calon Istri' : 'Anggaran Gabungan',
+                color: 'rgba(255, 255, 255, 0.8)',
+                font: { size: 16 }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // Helper functions
+    function escapeHtml(s) { 
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('resize', () => {
+      if (chart) {
+        chart.resize();
+      }
+    });
+  </script>
+</body>
+</html>
